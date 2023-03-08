@@ -49,6 +49,8 @@ for i in range(num_iteracoes):
     melhor_valor_vizinho = -1
     for vizinho in vizinhos:
         valor_vizinho = avaliar(vizinho)
+        print(
+            f"neighbor_value: {valor_vizinho} | best_neighbor_value: {melhor_valor_vizinho}")
         if valor_vizinho > melhor_valor_vizinho and vizinho not in lista_tabu:
             melhor_vizinho = vizinho
             melhor_valor_vizinho = valor_vizinho

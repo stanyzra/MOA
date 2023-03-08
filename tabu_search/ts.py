@@ -4,10 +4,10 @@ import numpy as np
 def fitness(solution, weights, values, capacity):
     max_value = 0
     max_weigth = 0
-    print(solution)
-    for i in range(len(solution)):
-        # print(i)
-        if solution == 1:
+    # print(solution)
+    for i, solution_value in np.ndenumerate(solution):
+        # print(solution_value)
+        if solution_value == 1:
             max_value += values[i]
             max_weigth += weights[i]
     # print(max_weigth)
@@ -32,6 +32,9 @@ def tabu_search(weights, values, capacity, iterations=20):
         neighbors = np.int64([])
         for j in range(len(weights)):
             neighbor = np.copy(current_solution)
+            # print(j)
+            # print(neighbor)
+            # print(current_solution)
             if neighbor[j] == 0:
                 neighbor[j] = 1
             else:
@@ -43,10 +46,17 @@ def tabu_search(weights, values, capacity, iterations=20):
         for neighbor in neighbors:
             # print(neighbors)
             neighbor_value = fitness(neighbor, weights, values, capacity)
-
-            if neighbor_value > best_neighbor_value and neighbor not in tabu_list:
+            print(neighbor)
+            print(tabu_list)
+            print(
+                f"neighbor_value: {neighbor_value} | best_neighbor_value: {best_neighbor_value}")
+            print(
+                f"first condition: {neighbor_value > best_neighbor_value}\nsecond condition: {not np.any(np.all(neighbor == tabu_list, axis=1))}")
+            if neighbor_value > best_neighbor_value and not np.any(np.all(neighbor == tabu_list, axis=1)):
+                print("entrou")
                 best_neighbor = np.copy(neighbor)
                 best_neighbor_value = neighbor_value
+                # print(best_neighbor)
 
         current_solution = np.copy(best_neighbor)
         current_value = best_neighbor_value
@@ -56,7 +66,8 @@ def tabu_search(weights, values, capacity, iterations=20):
 
         if len(tabu_list) == tabu_list_len:
             np.delete(tabu_list, 0)
-        tabu_search = np.append(tabu_search, current_solution)
+        tabu_list = np.append(tabu_list, current_solution)
+        # print(tabu_list)
 
     return best_solution, best_value
 
@@ -72,12 +83,21 @@ def main():
     # iterations = 20
     capacity = 10
 
-    # teste = np.int64([0, 5, 2, 4, 1, 3, 0, 2, 4, 1,
-    #                  3, 5, 0, 4, 1, 3, 5, 2, 0, 1])
-    # print(teste.reshape(4, 5))
-    ts_solution, ts_value = tabu_search(weights, values, capacity)
-    print(f"Solução encontrada: {ts_solution}")
-    print(f"Valor: {ts_value}")
+    teste = np.int64([0, 3, 1, 5, 2])
+    teste2 = np.int64([])
+
+    teste3 = [0, 3, 1, 5, 2]
+    teste4 = [[0, 3, 1, 5, 2]]
+
+    print(teste)
+    print(teste2)
+    print(teste2.any())
+
+    # print(not np.any(np.all(teste == teste2, axis=1)))
+    # print(teste3 not in teste4)
+    # ts_solution, ts_value = tabu_search(weights, values, capacity)
+    # print(f"Solução encontrada: {ts_solution}")
+    # print(f"Valor: {ts_value}")
 
 
 if __name__ == "__main__":
