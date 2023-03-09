@@ -6,7 +6,7 @@ valores = [10, 7, 4, 3, 8]
 capacidade = 10
 
 # Definindo os parâmetros da busca tabu
-tam_lista_tabu = 5
+tam_lista_tabu = 8
 num_iteracoes = 20
 
 # Inicializando a solução
@@ -49,8 +49,6 @@ for i in range(num_iteracoes):
     melhor_valor_vizinho = -1
     for vizinho in vizinhos:
         valor_vizinho = avaliar(vizinho)
-        print(
-            f"neighbor_value: {valor_vizinho} | best_neighbor_value: {melhor_valor_vizinho}")
         if valor_vizinho > melhor_valor_vizinho and vizinho not in lista_tabu:
             melhor_vizinho = vizinho
             melhor_valor_vizinho = valor_vizinho
