@@ -2,7 +2,7 @@
 Alunos:
 Stany Helberth de Souza Gomes da Silva - RA112683
 Gabriel Vendrame de Souza - RA
-Henrique 
+Henrique Ribeiro Favaro - RA 115408
 """
 
 import numpy as np
