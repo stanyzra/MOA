@@ -279,7 +279,7 @@ def main():
         print(f"Acc: {acc} at generation {gen}.")
         print(f"Best fitness: {parents[0].normal_fitness} at generation {gen}.")
         gen += 1
-        if parents[0].normal_fitness != current_fitness:
+        if math.floor(parents[0].normal_fitness) != math.floor(current_fitness):
             count = 0
             current_fitness = parents[0].normal_fitness
         else:
