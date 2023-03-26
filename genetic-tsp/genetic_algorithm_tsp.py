@@ -117,17 +117,14 @@ def reverse_path(path: list, i: int, j: int) -> list:
         path[j-k], path[i+k] = path[i+k], path[j-k]
     return path
 
-
 def best_improvement(individual: Individual, cities: list[City], best_fitness: float) -> Individual:
     individual_fitness = best_fitness
     best_i, best_j = 0, 0
     for i in range(len(individual.chromosome)):
         for j in range(i + 1, len(individual.chromosome)):
-            begin_dist = math.dist(cities[individual.chromosome[i-1]].coords, cities[individual.chromosome[i]].coords) + math.dist(cities[individual.chromosome[i]].coords, cities[individual.chromosome[(i+1)%len(individual.chromosome)]].coords)
-            final_dist = math.dist(cities[individual.chromosome[j-1]].coords, cities[individual.chromosome[j]].coords) + math.dist(cities[individual.chromosome[j]].coords, cities[individual.chromosome[(j+1)%len(individual.chromosome)]].coords)
-            change_begin_dist = math.dist(cities[individual.chromosome[i-1]].coords, cities[individual.chromosome[j]].coords) + math.dist(cities[individual.chromosome[j]].coords, cities[individual.chromosome[(i+1)%len(individual.chromosome)]].coords)
-            change_final_dist = math.dist(cities[individual.chromosome[j-1]].coords, cities[individual.chromosome[i]].coords) + math.dist(cities[individual.chromosome[i]].coords, cities[individual.chromosome[(j+1)%len(individual.chromosome)]].coords)
-            fitness = individual_fitness - (begin_dist + final_dist) + change_begin_dist + change_final_dist
+            dist = math.dist(cities[individual.chromosome[i-1]].coords, cities[individual.chromosome[i]].coords) + math.dist(cities[individual.chromosome[j]].coords, cities[individual.chromosome[(j+1)%len(individual.chromosome)]].coords)
+            change_dist = math.dist(cities[individual.chromosome[i-1]].coords, cities[individual.chromosome[j]].coords) + math.dist(cities[individual.chromosome[i]].coords, cities[individual.chromosome[(j+1)%len(individual.chromosome)]].coords)
+            fitness = individual_fitness - dist + change_dist
             if fitness < best_fitness:
                 best_i, best_j = i, j
                 best_fitness = fitness
@@ -179,8 +176,38 @@ def population_control(
 ) -> npt.ArrayLike:
     population = sorted(population, key=lambda individual: individual.normal_fitness)
     offspring = sorted(offspring, key=lambda individual: individual.normal_fitness)
-    offspring[-1] = population[0]
-    return sorted(offspring, key=lambda individual: individual.normal_fitness)
+
+    new_pop = []
+
+    i, j = 0, 0
+
+    for k in range(len(population)):
+        if i == len(population) or j == len(offspring): break # acabou uma das populaçoes
+
+        if population[i].normal_fitness < offspring[j].normal_fitness:
+            new_pop.append(population[i])
+            i += 1
+        else:
+            new_pop.append(offspring[j])
+            j += 1
+
+        # ignora soluções parecidas
+        while i < len(population) and new_pop[-1].normal_fitness == population[i].normal_fitness:
+            i += 1
+        while j < len(offspring) and new_pop[-1].normal_fitness == offspring[j].normal_fitness:
+            j += 1
+    
+    if len(new_pop) < len(population): # quando acabar uma das duas populações
+        while i < len(population) and len(new_pop) < len(population):
+            new_pop.append(population[i])
+            i += 1
+        while j < len(offspring) and len(new_pop) < len(offspring):
+            new_pop.append(offspring[j])
+            j += 1
+        while len(new_pop) < len(population):  # acabou as duas populações
+            new_pop.append(Individual(np.random.permutation(len(population[0].chromossome))))
+
+    return new_pop
 
 
 def main():
@@ -192,8 +219,7 @@ def main():
     40290.56369780305
     """
     mutation_rate = 0.04
-    num_generations = 9042
-    # cities = generate_cities(48)
+    num_generations = 2000
 
     gen = 0
 
@@ -203,9 +229,13 @@ def main():
             line = line.split()
             cities.append(City(x=int(line[1]), y=int(line[2])))
 
-    parents = generate_population(39 - 1, len(cities))
+    parents = generate_population(38, len(cities))
 
-    while gen < num_generations:
+    current_fitness = -1
+
+    count = 0
+
+    while count < num_generations:
         for i, individual in enumerate(parents):
             individual.fitness, individual.normal_fitness = fitness_function(
                 individual, cities
@@ -241,11 +271,19 @@ def main():
         parents = population_control(parents, offspring)
         print(f"Population")
         acc = 0
+    
+
         for i in range(1, len(parents)):
             if parents[i].normal_fitness == parents[i - 1].normal_fitness:
                 acc += 1
         print(f"Acc: {acc} at generation {gen}.")
         print(f"Best fitness: {parents[0].normal_fitness} at generation {gen}.")
+
+        if parents[0].normal_fitness != current_fitness:
+            count = 0
+            current_fitness = parents[0].normal_fitness
+        else:
+            count += 1
 
         for i, individual in enumerate(parents):
             if i == 0:
@@ -258,6 +296,7 @@ def main():
     print(f"Best solution: ")
     print(parents[0].chromosome)
     print(f"at generation {gen}.")
+
 
 
 if __name__ == "__main__":

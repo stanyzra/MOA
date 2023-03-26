@@ -25,8 +25,11 @@ class Individual:
 
     def __str__(self):
         return f"Chromosome: {self.chromosome}, Fitness: {self.fitness}, Normal Fitness: {self.normal_fitness}, Probability: {self.probability}"
+    def __repr__(self):
+        return f"Fitness: {self.normal_fitness}"
 
 def fitness_function(individual: Individual, cities: list[City], capacity: float) -> float:
+    global storage
     fitness = 0
     routes = []
     for i in range(len(individual.chromosome)):
@@ -36,22 +39,27 @@ def fitness_function(individual: Individual, cities: list[City], capacity: float
         city = cities[individual.chromosome[i]]
         if current_demand + city.demand > capacity:
             routes.append(current_route)
-            current_route = [city]
+            current_route = [individual.chromosome[i]]
             current_demand = city.demand
         else:
-            current_route.append(city)
+            current_route.append(individual.chromosome[i])
             current_demand += city.demand
         if i == len(individual.chromosome) - 1:
             routes.append(current_route)
     for k, route in enumerate(routes):
-        route_fitness = math.dist(storage.coords, route[0].coords)
+        route_fitness = math.dist(storage.coords, cities[route[0]].coords)
         for i in range(1, len(route)):
-            city1 = route[i-1]
-            city2 = route[i]
+            city1 = cities[route[i-1]]
+            city2 = cities[route[i]]
             route_fitness += math.dist(city1.coords, city2.coords)
-        route_fitness += math.dist(storage.coords, route[len(route)-1].coords)
-        routes[k], route_fitness = best_improvement(route, route_fitness)
+        route_fitness += math.dist(storage.coords, cities[route[-1]].coords)
+        routes[k], route_fitness = best_improvement(route, cities, route_fitness)
         fitness += route_fitness
+    i = 0
+    for route in routes:
+        for city in route:
+            individual.chromosome[i] = city
+            i += 1
     return 1 / fitness, fitness
 
 def generate_population(population_size: int, chromosome_size: int) -> npt.ArrayLike:
@@ -115,17 +123,15 @@ def reverse_path(path: list, i: int, j: int) -> list:
         path[j-k], path[i+k] = path[i+k], path[j-k]
     return path
 
-def best_improvement(individual: list, best_fitness: float) -> list:
+def best_improvement(individual: list, cities: list[City], best_fitness: float) -> list:
     individual_fitness = best_fitness
-    best_i = 0
-    best_j = 0
-    for i in range(len(individual)):
+    best_i = -1
+    best_j = -1
+    for i in range(1, len(individual)):
         for j in range(i + 1, len(individual)-1):
-            begin_dist = math.dist(individual[i-1].coords, individual[i].coords) + math.dist(individual[i].coords, individual[i+1].coords)
-            final_dist = math.dist(individual[j-1].coords, individual[j].coords) + math.dist(individual[j].coords, individual[j+1].coords)
-            change_begin_dist = math.dist(individual[i-1].coords, individual[j].coords) + math.dist(individual[j].coords, individual[i+1].coords)
-            change_final_dist = math.dist(individual[j-1].coords, individual[i].coords) + math.dist(individual[i].coords, individual[j+1].coords)
-            fitness = individual_fitness - (begin_dist + final_dist) + change_begin_dist + change_final_dist
+            dist = math.dist(cities[individual[i-1]].coords, cities[individual[i]].coords) + math.dist(cities[individual[j]].coords, cities[individual[j+1]].coords)
+            change_dist = math.dist(cities[individual[i-1]].coords, cities[individual[j]].coords) + math.dist(cities[individual[i]].coords, cities[individual[j+1]].coords)
+            fitness = individual_fitness + change_dist - dist
             if fitness < best_fitness:
                 best_i, best_j = i, j
                 best_fitness = fitness
@@ -175,12 +181,43 @@ def population_control(
 ) -> npt.ArrayLike:
     population = sorted(population, key=lambda individual: individual.normal_fitness)
     offspring = sorted(offspring, key=lambda individual: individual.normal_fitness)
-    offspring[-1] = population[0]
-    return sorted(offspring, key=lambda individual: individual.normal_fitness)
+
+    new_pop = []
+
+    i, j = 0, 0
+
+    for k in range(len(population)):
+        if i == len(population) or j == len(offspring): break # acabou uma das populaçoes (improvavel de acontecer)
+
+        if population[i].normal_fitness < offspring[j].normal_fitness:
+            new_pop.append(population[i])
+            i += 1
+        else:
+            new_pop.append(offspring[j])
+            j += 1
+
+        # ignora soluções parecidas
+        while i < len(population) and new_pop[-1].normal_fitness == population[i].normal_fitness:
+            i += 1
+        while j < len(offspring) and new_pop[-1].normal_fitness == offspring[j].normal_fitness:
+            j += 1
+    
+    if len(new_pop) < len(population): # quando acabar uma das duas populações
+        while i < len(population) and len(new_pop) < len(population):
+            new_pop.append(population[i])
+            i += 1
+        while j < len(offspring) and len(new_pop) < len(offspring):
+            new_pop.append(offspring[j])
+            j += 1
+        while len(new_pop) < len(population):  # acabou as duas populações (bem improvavel)
+            new_pop.append(Individual(np.random.permutation(len(population[0].chromossome))))
+
+    return new_pop
 
 def main():
+    global storage
     mutation_rate = 0.04
-    num_generations = 9042
+    num_generations = 1000
 
     gen = 0
 
@@ -190,9 +227,13 @@ def main():
             line = line.split()
             cities.append(City(x=int(line[1]), y=int(line[2]), demand=int(line[3])))
     storage = cities[0]
-    parents = generate_population(100, len(cities))
+    parents = generate_population(38, len(cities))
 
-    while gen < num_generations:
+    current_fitness = -1
+
+    count = 0
+
+    while count < num_generations:
         for individual in parents:
             individual.fitness, individual.normal_fitness = fitness_function(
                 individual, cities, capacity=6000
@@ -208,7 +249,7 @@ def main():
             father = roulette_wheel_selection(parents)
             mother = roulette_wheel_selection(parents)
 
-            offspring[i : i + 2] = OX_crossover(np.array([father, mother]))
+            offspring[i], offspring[i+1] = OX_crossover(np.array([father, mother]))
 
             offspring[i].fitness, offspring[i].normal_fitness = fitness_function(
                 offspring[i], cities, capacity=6000
@@ -237,8 +278,12 @@ def main():
                 acc += 1
         print(f"Acc: {acc} at generation {gen}.")
         print(f"Best fitness: {parents[0].normal_fitness} at generation {gen}.")
-
         gen += 1
+        if parents[0].normal_fitness != current_fitness:
+            count = 0
+            current_fitness = parents[0].normal_fitness
+        else:
+            count += 1
 
     for individual in parents:
         individual.fitness, individual.normal_fitness = fitness_function(
