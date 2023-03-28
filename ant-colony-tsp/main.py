@@ -15,7 +15,8 @@ def main():
     cidades = []
     pontos = []
 
-    with open('./data/att48.txt') as f:
+    # troque o arquivo txt para alterar o problema TSP a ser resolvido
+    with open('./data/chn31.txt') as f:
         for linha in f.readlines():
             cidade = linha.split(' ')
             cidades.append(
