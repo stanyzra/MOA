@@ -13,6 +13,7 @@ def knapsack_aco(values, weights, capacity, num_ants=10, max_iterations=100, eva
     best_value = 0
 
     for iteration in range(max_iterations):
+        print("Running iteration: ", iteration)
         # Initialize ants and their solutions
         ants = np.zeros((num_ants, num_items))
         ant_values = np.zeros(num_ants)

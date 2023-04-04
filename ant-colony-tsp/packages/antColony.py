@@ -1,5 +1,6 @@
 import random
 
+# random.seed(3) # definindo random seed para padronizar resultados em diferentes execuções
 class Grafo(object):
     """
     Classe que guarda o grafo à ser percorrido durante as iterações
@@ -79,10 +80,9 @@ class AntColony(object):
 
             self.atualizar_feromonio(grafo=grafo, formigas=formigas)
 
-            #TODO: remove if not used
-            # print('geracao #{}, melhor custo: {}, caminho: {}'.format(gen, melhor_custo, melhor_solucao))
             grafo_resultados.append((gen,melhor_custo))
             print('geracao #{}, melhor custo: {}'.format(gen, melhor_custo))
+
         return melhor_solucao, melhor_custo, grafo_resultados
 
 

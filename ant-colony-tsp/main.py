@@ -16,7 +16,7 @@ def main():
     pontos = []
 
     # troque o arquivo txt para alterar o problema TSP a ser resolvido
-    with open('./data/chn31.txt') as f:
+    with open('./data/att48.txt') as f:
         for linha in f.readlines():
             cidade = linha.split(' ')
             cidades.append(
@@ -46,11 +46,11 @@ def main():
     
     antColony = AntColony(
         qtd_formigas=30, 
-        geracoes=500, 
+        geracoes=900, 
         alpha=1.0, 
-        beta=10.0, 
+        beta=7.0, 
         rho=0.5, 
-        q=10, 
+        q=3, 
         estrategia=2
     )
 
@@ -61,10 +61,10 @@ def main():
 
     caminho, custo, grafo_resultados = antColony.calcular_total(grafo=grafo)
 
-    print('Custo: {}, caminho: {}'.format(custo, caminho))
-    plot(pontos=pontos, caminho=caminho) # plotar caminho encontrado
+    print('Custo: {}\nCaminho: {}\nGerações: {}'.format(custo, caminho, antColony.geracoes))
+    # plot(pontos=pontos, caminho=caminho) # plotar caminho encontrado
 
-    plot(pontos=grafo_resultados, caminho=[i for i in range(len(grafo_resultados))]) # plotar grafico de resultados durante gerações
+    # plot(pontos=grafo_resultados, caminho=[i for i in range(len(grafo_resultados))]) # plotar grafico de resultados durante gerações
 
 if __name__ == '__main__':
     main()
