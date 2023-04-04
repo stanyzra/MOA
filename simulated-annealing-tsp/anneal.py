@@ -99,9 +99,9 @@ class SimAnneal(object):
 
             self.fitness_list.append(self.cur_fitness)
 
-        print("Best fitness obtained: ", self.best_fitness)
+        print("Best fitness obtido: ", self.best_fitness)
         improvement = 100 * (self.fitness_list[0] - self.best_fitness) / (self.fitness_list[0])
-        print(f"Improvement over greedy heuristic: {improvement : .2f}%")
+        print(f"Melhoramento sobre a rota aleatória inicial: {improvement : .2f}%")
 
     def batch_anneal(self, times=10):
         """

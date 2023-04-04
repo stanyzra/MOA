@@ -17,9 +17,12 @@ def generate_random_coords(num_nodes):
 
 
 if __name__ == "__main__":
-    # coords = read_coords("coord.txt")  # generate_random_coords(100)
-    coords = generate_random_coords(300)
+    coords = read_coords("coord.txt")  # generate_random_coords(100)
+    # coords = generate_random_coords(300)
     sa = SimAnneal(coords, stopping_iter=150000, stopping_T=1e-60, alpha=0.999)
     sa.anneal()
     sa.visualize_routes()
     sa.plot_learning()
+    print("Iteração de Parada: ", sa.iteration)
+    print("Temperatura de Parada: ", sa.T)
+    print("Melhor Solução: ", sa.best_solution)
