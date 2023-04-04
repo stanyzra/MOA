@@ -1,7 +1,36 @@
 import numpy as np
 import random
 
+random.seed(42)
+initialValues = []
+initialWeights = []
+for i in range(300):
+    initialValues.append(random.randint(1, 100))
+    initialWeights.append(random.randint(1, 100))
+
 def knapsack_aco(values, weights, capacity, num_ants=10, max_iterations=100, evaporation_rate=0.5, alpha=1, beta=1):
+    """
+    Solves the knapsack problem using the Ant Colony Optimization algorithm.
+
+    Parameters
+    ----------
+    values : NP.array-like
+        The values of the items.
+    weights : NP.array-like
+        The weights of the items.
+    capacity : int
+        The capacity of the knapsack.
+    num_ants : int, optional
+        The number of ants to use. The default is 10.
+    max_iterations : int, optional
+        The maximum number of iterations. The default is 100.
+    evaporation_rate : float, optional
+        The evaporation rate of the pheromone trail. The default is 0.5.
+    alpha : float, optional
+        The alpha parameter of the ACO algorithm. The default is 1.
+    beta : float, optional
+        The beta parameter of the ACO algorithm. The default is 1.
+    """
     num_items = len(values)
 
     # Initialize pheromone trail and heuristic information
@@ -46,14 +75,29 @@ def knapsack_aco(values, weights, capacity, num_ants=10, max_iterations=100, eva
 
     return best_solution, best_value
 
+# values = np.random.randint(1, 100, 300)
+values = np.array(initialValues)
+# weights = np.random.randint(1, 100, 300)
+weights = np.array(initialWeights)
+capacity = 370
 
+best_solution, best_value = knapsack_aco(
+    values=values, 
+    weights=weights, 
+    capacity=capacity, 
+    num_ants=30, 
+    max_iterations=300, 
+    evaporation_rate=0.5, 
+    alpha=0.3, 
+    beta=1
+)
 
-# generate an np.array with 300 values
-print('Generating values and weights...')
-random.seed(42)
-values = np.random.randint(1, 100, 300)
-weights = np.random.randint(1, 100, 300)
-capacity = 200
-best_solution, best_value = knapsack_aco(values=values, weights=weights, capacity=capacity, num_ants=20, max_iterations=1000, evaporation_rate=0.4, alpha=1, beta=1)
-print('Best solution: {}'.format(best_solution))
-print('Best value: {}'.format(best_value))
+used_itens = []
+for i in range(len(best_solution)):
+    if best_solution[i] == 1:
+        used_itens.append(i)
+
+print('Melhor arranjo de itens: {}'.format(used_itens))
+print('Melhor valor alcançado: {}'.format(best_value))
+print('Peso total utilizado: {}'.format(np.sum(weights[used_itens])))
+print('Critério de parada utilizado: Máximo de 300 iterações')
