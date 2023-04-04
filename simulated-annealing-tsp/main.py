@@ -1,3 +1,10 @@
+"""
+Alunos:
+Stany Helberth de Souza Gomes da Silva - RA112683
+Gabriel de Souza Vendrame - RA112681
+Henrique Ribeiro Favaro - 115408
+"""
+
 from anneal import SimAnneal
 import matplotlib.pyplot as plt
 import random
