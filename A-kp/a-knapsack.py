@@ -1,6 +1,13 @@
 from heapq import heappush, heappop
 import time
 
+"""
+Alunos:
+Stany Helberth de Souza Gomes da Silva - RA112683
+Gabriel de Souza Vendrame - RA112681
+Henrique Ribeiro Favaro - 115408
+"""
+
 class Knapsack():
     def __init__(self, state, v, w, d):
         self.state = state
